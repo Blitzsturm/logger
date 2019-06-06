@@ -29,7 +29,7 @@ const
 		db.run(`INSERT INTO log (timestamp,data) VALUES (${new Date().getTime()},'${req.query.msg.replace(/'/g, "''")}');`, e =>
 		{
 			if (e) throw e;
-			res.json(eq.query.msg);
+			res.json(req.query.msg);
 		});
 	});
 

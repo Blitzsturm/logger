@@ -18,10 +18,11 @@ const
 
 	const app = express();
 
-	app.get("/", (req, res) =>
+	app.use("/", express.static("public",
 	{
-		res.end("GO AWAY!");
-	});
+		extensions: ["htm", "html"],
+		index: "index.htm"
+	}));
 	
 	app.get("/log", (req, res) =>
 	{

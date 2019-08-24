@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Logger</title>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+		<script type="text/javascript">
+
+			var app;
+			$(()=>
+			{
+				app = new Vue(
+				{
+					el: '#app',
+					data:
+					{
+						logData: []
+					},
+					methods:
+					{
+						Reload()
+						{
+							fetch("/log.json").then(o=>o.json()).then(o =>
+							{
+								this.logData = o;
+							});
+						},
+						Write(msg)
+						{
+							fetch("/log?msg=" + encodeURIComponent(msg)).then(o=>o.json()).then(o =>
+							{
+								//this.logData = o;
+							});
+						}
+					}
+				});
+				app.Reload();
+			});
+		
+		</script>
+		<style type="text/css">
+		
+			
+		</style>
+	</head>
+	<body>
+		<div id="app">
+			<table v-if="logData.length>0">
+				<thead>
+					<tr>
+						<th>Time</th>
+						<th>Text</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="row in logData">
+						<td>{{JSON.stringify(new Date(row.timestamp)).replace(/"|Z/g,"").replace(/T/g," ")}}</td>
+						<td>{{row.data}}</td>
+					</tr>
+				</tbody>
+			</table>
+			
+		</div>
+	</body>
+</html>

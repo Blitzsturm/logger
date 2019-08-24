@@ -15,7 +15,15 @@
 					el: '#app',
 					data:
 					{
-						logData: []
+						logData: [],
+						message: ""
+					},
+					computed:
+					{
+						apiPath()
+						{
+							return document.location.origin + "?msg={TEXT}";
+						}
 					},
 					methods:
 					{
@@ -30,8 +38,17 @@
 						{
 							fetch("/log?msg=" + encodeURIComponent(msg)).then(o=>o.json()).then(o =>
 							{
-								//this.logData = o;
+								this.logData.unshift(o);
+								while (this.logData.length>1000) this.logData.pop();
 							});
+						},
+						Send(e)
+						{
+							if (e.keyCode == 13)
+							{
+								this.Write(this.message);
+								this.message = "";
+							}
 						}
 					}
 				});
@@ -41,11 +58,27 @@
 		</script>
 		<style type="text/css">
 		
-			
+			div#app > table
+			{
+				border-collapse: collapse;
+			}
+
+			div#app > table > thead > tr > th,
+			div#app > table > tbody > tr > td
+			{
+				border: 1px solid #444;
+			}
+
 		</style>
 	</head>
 	<body>
 		<div id="app">
+			<input type="text" v-model="message" @keypress="Send"/>
+			<br/>
+			<br/>
+			<span>API Post: {{apiPath}}</span>
+			<br/>
+			<br/>
 			<table v-if="logData.length>0">
 				<thead>
 					<tr>

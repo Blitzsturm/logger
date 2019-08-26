@@ -10,19 +10,36 @@
 			var app;
 			$(()=>
 			{
+				Vue.component('editable',
+				{
+					template: '<div contenteditable="true" @input="update"></div>',
+					props: ['content'],
+					mounted()
+					{
+						this.$el.innerText = this.content;
+					},
+					methods:
+					{
+						update(e)
+						{
+							this.$emit('update', e.target.innerText);
+						}
+					}
+				});
+
 				app = new Vue(
 				{
 					el: '#app',
 					data:
 					{
 						logData: [],
-						message: ""
+						text: "One\r\nTwo\r\nThree"
 					},
 					computed:
 					{
 						apiPath()
 						{
-							return document.location.origin + "?msg={TEXT}";
+							return document.location.origin + "/log?msg={TEXT}";
 						}
 					},
 					methods:
@@ -34,21 +51,15 @@
 								this.logData = o;
 							});
 						},
-						Write(msg)
+						Write()
 						{
-							fetch("/log?msg=" + encodeURIComponent(msg)).then(o=>o.json()).then(o =>
+							fetch("/log?msg=" + encodeURIComponent(this.text)).then(o=>o.json()).then(o =>
 							{
+								document.getElementById("txtInput").innerText = "";
+								this.text = "";
 								this.logData.unshift(o);
 								while (this.logData.length>1000) this.logData.pop();
 							});
-						},
-						Send(e)
-						{
-							if (e.keyCode == 13)
-							{
-								this.Write(this.message);
-								this.message = "";
-							}
 						}
 					}
 				});
@@ -57,43 +68,89 @@
 		
 		</script>
 		<style type="text/css">
-		
-			div#app > table
+			
+			#txtInput
 			{
-				border-collapse: collapse;
+				border: 1px solid #000;
+				border-radius: 4px;
+				height: 60px;
+				overflow-y: auto;
+				padding: 2px;
+				width: 400px;
 			}
 
-			div#app > table > thead > tr > th,
-			div#app > table > tbody > tr > td
+			#divLog
+			{
+				bottom: 0px;
+				left: 0px;
+				overflow-y: scroll;
+				position: fixed;
+				right: 0px;
+				top: 120px;
+			}
+
+			#divLog > table
+			{
+				border-collapse: collapse;
+				width: 100%;
+				
+			}
+
+			#divLog > table > thead > tr > th
 			{
 				border: 1px solid #444;
+				background-color: #444;
+				color: #fff;
+				vertical-align: top;
+			}
+			
+			#divLog > table > tbody > tr > td
+			{
+				border: 1px solid #444;
+				background-color: #fff;
+				color: #000;
+				vertical-align: top;
+			}
+
+			#divLog > table > tbody > tr > td:first-child
+			{
+				white-space: nowrap;
+			}
+
+			#divLog > table > tbody > tr > td:last-child
+			{
+				width: 100%;
 			}
 
 		</style>
 	</head>
 	<body>
 		<div id="app">
-			<input type="text" v-model="message" @keypress="Send"/>
+
+			<editable id="txtInput" :content="text" @update="text = $event"></editable>
+			<button @click="Write">Write</button>
+
 			<br/>
-			<br/>
-			<span>API Post: {{apiPath}}</span>
-			<br/>
-			<br/>
-			<table v-if="logData.length>0">
-				<thead>
-					<tr>
-						<th>Time</th>
-						<th>Text</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr v-for="row in logData">
-						<td>{{JSON.stringify(new Date(row.timestamp)).replace(/"|Z/g,"").replace(/T/g," ")}}</td>
-						<td>{{row.data}}</td>
-					</tr>
-				</tbody>
-			</table>
+			<span>API GET: {{apiPath}}</span>
 			
+			<div id="divLog">
+				<table>
+					<thead>
+						<tr>
+							<th>Time</th>
+							<th>Text</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="row in logData">
+							<td>{{JSON.stringify(new Date(row.timestamp)).replace(/"|Z/g,"").replace(/T/g," ")}}</td>
+							<td>
+								<pre>{{row.data}}</pre>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</body>
 </html>

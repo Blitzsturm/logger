@@ -3,9 +3,11 @@ const
 	os = require("os"),
 	express = require("express"),
 	sqlite3 = require("sqlite3");
+Main().catch(console.error);
 
-(async()=>
+async function Main()
 {
+	if (!process.env.PORT) process.env.PORT = 5000;
 	var db, db_err;
 	try
 	{
@@ -20,15 +22,15 @@ const
 
 	app.use("/", express.static("public",
 	{
-		extensions: ["htm", "html"],
+		//extensions: ["htm", "html"],
 		index: "index.htm"
 	}));
 	
 	app.get("/log", (req, res) =>
 	{
 		if (db_err) throw db_err;
-		var row = {timestamp: new Date().getTime(), data: req.query.msg.replace(/'/g, "''")};
-		db.run(`INSERT INTO log (timestamp,data) VALUES (${row.timestamp},'${row.data}');`, e =>
+		var row = {timestamp: new Date().getTime(), data: req.query.msg};
+		db.run(`INSERT INTO log (timestamp,data) VALUES (${row.timestamp},'${row.data.replace(/'/g, "''")}');`, e =>
 		{
 			if (e) throw e;
 			res.json(row);
@@ -37,6 +39,7 @@ const
 
 	app.get("/log.json", (req, res) =>
 	{
+		if (db_err) throw db_err;
 		db.all("SELECT * FROM log ORDER BY timestamp DESC LIMIT 1000", (e, r) =>
 		{
 			if (e) throw e;
@@ -59,26 +62,20 @@ const
 		});
 	});
 
-	app.listen(5000, () => console.log("Listening on port 5000 (http)"));
-
-})().catch(console.error);
+	app.listen(process.env.PORT, () => console.log(`Listening on port ${process.env.PORT} (http)`));
+}
 
 function cfgDB(strPath)
 {
-	return new Promise((resolve, reject)=>
+	return new Promise((resolve, reject) =>
 	{
-		var db = new sqlite3.Database('./log.db', e =>
-		{
-			if (e) return reject(e);
-			db.run("CREATE TABLE IF NOT EXISTS log (timestamp INT, data TEXT);", e =>
-			{
-				if (e) return reject(e);
-				db.run("CREATE INDEX IF NOT EXISTS ix_log_timestamp ON log (timestamp ASC);", e =>
-				{
-					if (e) return reject(e);
-					resolve(db);
-				});
-			});
-		});
+		var db = new sqlite3.Database(strPath, e => e ? reject(e) : db.exec(`
+			CREATE TABLE IF NOT EXISTS log
+			(
+				timestamp INT,
+				data TEXT
+			);
+			CREATE INDEX IF NOT EXISTS ix_log_timestamp ON log (timestamp DESC);
+		`, e => e ? reject(e) : resolve(db)));
 	});
 }

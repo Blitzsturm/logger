@@ -71,8 +71,11 @@
 			
 			#txtInput
 			{
+				background-color: #fff;
 				border: 1px solid #000;
 				border-radius: 4px;
+				box-shadow: 4px 4px 16px rgba(0,0,0,0.25);
+				color: #000;
 				height: 60px;
 				overflow-y: auto;
 				padding: 2px;
@@ -86,7 +89,7 @@
 				overflow-y: scroll;
 				position: fixed;
 				right: 0px;
-				top: 120px;
+				top: 150px;
 			}
 
 			#divLog > table
@@ -128,8 +131,8 @@
 		<div id="app">
 
 			<editable id="txtInput" :content="text" @update="text = $event"></editable>
+			<br/>
 			<button @click="Write">Write</button>
-
 			<br/>
 			<span>API GET: {{apiPath}}</span>
 			

@@ -8,10 +8,12 @@ Main().catch(console.error);
 async function Main()
 {
 	if (!process.env.PORT) process.env.PORT = 5000;
+	if (!process.env.DB_PATH) process.env.DB_PATH = './log.db';
+
 	var db, db_err;
 	try
 	{
-		db = await cfgDB('./log.db');
+		db = await cfgDB(process.env.DB_PATH);
 	}
 	catch(e)
 	{

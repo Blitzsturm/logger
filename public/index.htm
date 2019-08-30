@@ -5,35 +5,27 @@
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.0/vuedraggable.umd.min.js"></script>
+		
+
 		<script type="text/javascript">
 
 			var app;
 			$(()=>
 			{
-				Vue.component('editable',
-				{
-					template: '<div contenteditable="true" @input="update"></div>',
-					props: ['content'],
-					mounted()
-					{
-						this.$el.innerText = this.content;
-					},
-					methods:
-					{
-						update(e)
-						{
-							this.$emit('update', e.target.innerText);
-						}
-					}
-				});
-
+				// Configure App
 				app = new Vue(
 				{
 					el: '#app',
+					mounted()
+					{
+						this.Reload();
+					},
 					data:
 					{
 						logData: [],
-						text: "One\r\nTwo\r\nThree"
+						text: ""
 					},
 					computed:
 					{
@@ -50,6 +42,7 @@
 							{
 								this.logData = o;
 							});
+							return this;
 						},
 						Write()
 						{
@@ -60,14 +53,39 @@
 								this.logData.unshift(o);
 								while (this.logData.length>1000) this.logData.pop();
 							});
+							return this;
+						}
+					},
+					components:
+					{
+						editable:
+						{
+							template: '<div contenteditable="true" @input="update"></div>',
+							props: ['text', 'html'],
+							mounted()
+							{
+								if (this.html) this.$el.innerHTML = this.html;
+								else if (this.text) this.$el.innerText = this.text;
+							},
+							methods:
+							{
+								update(e)
+								{
+									this.$emit('update', e.target.innerText);
+								}
+							}
 						}
 					}
 				});
-				app.Reload();
 			});
 		
 		</script>
 		<style type="text/css">
+
+			body
+			{
+				background-color: #999;
+			}
 			
 			#txtInput
 			{
@@ -89,14 +107,13 @@
 				overflow-y: scroll;
 				position: fixed;
 				right: 0px;
-				top: 150px;
+				top: 100px;
 			}
 
 			#divLog > table
 			{
 				border-collapse: collapse;
 				width: 100%;
-				
 			}
 
 			#divLog > table > thead > tr > th
@@ -125,17 +142,23 @@
 				width: 100%;
 			}
 
+			#divLog > table > tbody > tr > td:last-child > pre
+			{
+				margin: 0px;
+			}
+			
 		</style>
 	</head>
 	<body>
 		<div id="app">
 
-			<editable id="txtInput" :content="text" @update="text = $event"></editable>
-			<br/>
-			<button @click="Write">Write</button>
-			<br/>
-			<span>API GET: {{apiPath}}</span>
+			<div style="display:flex;flex-wrap:nowrap;">
+				<editable id="txtInput" :text="text" @update="text = $event"></editable>
+				<button @click="Write">Write</button>
+			</div>
 			
+			<span>API GET: {{apiPath}}</span>
+
 			<div id="divLog">
 				<table>
 					<thead>
@@ -153,7 +176,9 @@
 						</tr>
 					</tbody>
 				</table>
+				
 			</div>
+			
 		</div>
 	</body>
 </html>

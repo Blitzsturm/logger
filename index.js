@@ -57,7 +57,7 @@ async function Main()
 			totalmem: os.totalmem(),
 			loadavg: os.loadavg(),
 			platform: os.platform(),
-			temppath: os.tmpdir(),	// Heroku provides approximatly 620gb
+			temppath: os.tmpdir(),
 			uptime: os.uptime()
 		});
 	});

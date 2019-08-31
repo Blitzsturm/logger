@@ -11,11 +11,10 @@
 		<script type="text/javascript" src="https://www.vantajs.com/dist/vanta.waves.min.js"></script>
 		<script type="text/javascript">
 
-			var app;
 			$(()=>
 			{
 				// Configure App
-				app = new Vue(
+				window.app = new Vue(
 				{
 					el: '#app',
 					mounted()
@@ -27,17 +26,11 @@
 						logData: [],
 						text: ""
 					},
-					computed:
-					{
-						apiPath()
-						{
-							return document.location.origin + "/log?msg={TEXT}";
-						}
-					},
 					methods:
 					{
 						Reload()
 						{
+							this.logData = [];
 							fetch("/log.json").then(o=>o.json()).then(o =>
 							{
 								this.logData = o;
@@ -78,14 +71,20 @@
 					}
 				});
 				VANTA.WAVES({el: "#app", color: 0x0});
+				$("#app").css({display: ""});
+				
 			});
 		
 		</script>
 		<style type="text/css">
 
-			#app
+			body
 			{
 				background-color: #000;
+			}
+
+			#app
+			{
 				position: fixed;
 				top: 0px;
 				bottom: 0px;
@@ -117,13 +116,13 @@
 				top: 80px;
 			}
 
-			#divLog > table
+			#divLog>table
 			{
 				border-collapse: collapse;
 				width: 100%;
 			}
 
-			#divLog > table > thead > tr > th
+			#divLog>table>thead>tr>th
 			{
 				border: 1px solid #444;
 				background-color: #444;
@@ -132,7 +131,7 @@
 				vertical-align: top;
 			}
 			
-			#divLog > table > tbody > tr > td
+			#divLog>table>tbody>tr>td
 			{
 				border: 1px solid #444;
 				background-color: rgba(255,255,255,0.75);
@@ -140,17 +139,17 @@
 				vertical-align: top;
 			}
 
-			#divLog > table > tbody > tr > td:first-child
+			#divLog>table>tbody>tr>td:first-child
 			{
 				white-space: nowrap;
 			}
 
-			#divLog > table > tbody > tr > td:last-child
+			#divLog>table>tbody>tr>td:last-child
 			{
 				width: 100%;
 			}
 
-			#divLog > table > tbody > tr > td:last-child > pre
+			#divLog>table>tbody>tr>td:last-child>pre
 			{
 				margin: 0px;
 			}
@@ -178,6 +177,7 @@
 
 			div.textSubmit>button:active
 			{
+				background-color: #44A;
 				border: 1px solid #ff0;
 				color: #ff0;
 			}
@@ -185,14 +185,17 @@
 		</style>
 	</head>
 	<body>
-		<div id="app">
+		<div id="app" style="display:none;">
 
 			<div class="textSubmit">
 				<editable id="txtInput" :text="text" @update="text = $event"></editable>
 				<button @click="Write">Write</button>
 			</div>
 			
-			<span style="position:fixed;top:0px;right:0px;font-size:12px;color:#fff;">API GET: {{apiPath}}</span>
+			<span style="position:fixed;top:0px;right:0px;font-size:12px;color:#fff;">
+				API GET: {{document.location.origin + "/log?msg={TEXT}"}}<br/>
+				API GET: {{document.location.origin + "/log.json"}}
+			</span>
 
 			<div id="divLog">
 				<table>
@@ -211,7 +214,6 @@
 						</tr>
 					</tbody>
 				</table>
-				
 			</div>
 			
 		</div>

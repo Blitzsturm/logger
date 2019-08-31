@@ -5,10 +5,10 @@
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
-		<!--	
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.9.0/Sortable.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.0/vuedraggable.umd.min.js"></script>
-		-->
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/108/three.min.js"></script>
+		<script type="text/javascript" src="https://www.vantajs.com/dist/vanta.waves.min.js"></script>
 		<script type="text/javascript">
 
 			var app;
@@ -77,14 +77,20 @@
 						}
 					}
 				});
+				VANTA.WAVES({el: "#app", color: 0x0});
 			});
 		
 		</script>
 		<style type="text/css">
 
-			body
+			#app
 			{
-				background-color: #999;
+				background-color: #000;
+				position: fixed;
+				top: 0px;
+				bottom: 0px;
+				right: 0px;
+				left: 0px;
 			}
 			
 			#txtInput
@@ -94,7 +100,8 @@
 				border-radius: 4px;
 				box-shadow: 4px 4px 16px rgba(0,0,0,0.25);
 				color: #000;
-				height: 60px;
+				min-height: 18px;
+				max-height: 54px;
 				overflow-y: auto;
 				padding: 2px;
 				width: 400px;
@@ -107,7 +114,7 @@
 				overflow-y: scroll;
 				position: fixed;
 				right: 0px;
-				top: 100px;
+				top: 80px;
 			}
 
 			#divLog > table
@@ -120,6 +127,7 @@
 			{
 				border: 1px solid #444;
 				background-color: #444;
+				background-image: linear-gradient(0deg, #222, #666);
 				color: #fff;
 				vertical-align: top;
 			}
@@ -127,7 +135,7 @@
 			#divLog > table > tbody > tr > td
 			{
 				border: 1px solid #444;
-				background-color: #fff;
+				background-color: rgba(255,255,255,0.75);
 				color: #000;
 				vertical-align: top;
 			}
@@ -146,18 +154,45 @@
 			{
 				margin: 0px;
 			}
+
+			div.textSubmit
+			{
+				border: 1px solid rgba(255,255,255,0.5);
+				border-radius: 4px;
+				display: flex;
+				flex-wrap: nowrap;
+				width: fit-content;
+				margin: 4px;
+				padding: 2px;
+			}
+
+			div.textSubmit>button
+			{
+				background-color: #444;
+				border: 1px solid #000;
+				border-radius: 4px;
+				box-shadow: inset 0px 0px 4px rgb(0,0,0);
+				color: #fff;
+				font-weight: bold;
+			}
+
+			div.textSubmit>button:active
+			{
+				border: 1px solid #ff0;
+				color: #ff0;
+			}
 			
 		</style>
 	</head>
 	<body>
 		<div id="app">
 
-			<div style="display:flex;flex-wrap:nowrap;">
+			<div class="textSubmit">
 				<editable id="txtInput" :text="text" @update="text = $event"></editable>
 				<button @click="Write">Write</button>
 			</div>
 			
-			<span>API GET: {{apiPath}}</span>
+			<span style="position:fixed;top:0px;right:0px;font-size:12px;color:#fff;">API GET: {{apiPath}}</span>
 
 			<div id="divLog">
 				<table>

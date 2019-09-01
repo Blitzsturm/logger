@@ -1,5 +1,6 @@
 "use strict";
 const
+	fs = require("fs"),
 	os = require("os"),
 	express = require("express"),
 	sqlite3 = require("sqlite3");
@@ -27,50 +28,8 @@ async function Main()
 		//extensions: ["htm", "html"],
 		index: "index.htm"
 	}));
-	
-	app.get("/log", (req, res) =>
-	{
-		if (db_err) throw db_err;
-		var row = {time: new Date().getTime(), data: req.query.msg};
-		if (req.query.key)
-		{
-			db.exec(`
-				INSERT OR IGNORE INTO keys (key) VALUES (${esc(req.query.key)});
-				INSERT INTO log (time, keyid, data) VALUES (${row.time}, (SELECT id FROM keys WHERE key = ${esc(req.query.key)}), ${esc(row.data)});
-			`, e =>
-			{
-				if (e) throw e;
-				res.json(row);
-			});
-		}
-		else
-		{
-			db.exec(`INSERT INTO log (time,data) VALUES (${row.time},${esc(row.data)});`, e =>
-			{
-				if (e) throw e;
-				res.json(row);
-			});
-		}
-	});
 
-	app.get("/delete", (req, res) =>
-	{
-		if (db_err) throw db_err;
-		if (req.query.key)
-		{
-			db.exec(`DELETE FROM keys WHERE key = ${esc(req.query.key)}; VACUUM;`, e =>
-			{
-				if (e) throw e;
-				res.json({status:"success"});
-			});
-		}
-		else
-		{
-			res.json({status:"failure", message: "no key provided"});
-		}
-	});
-
-	app.get("/log.json", (req, res) =>
+	app.get("/api/log", (req, res) =>
 	{
 		if (db_err) throw db_err;
 		if (req.query.key)
@@ -103,18 +62,64 @@ async function Main()
 		}
 	});
 
-	app.get("/status.json", (req, res) =>
+	app.get("/api/write", (req, res) =>
 	{
-		res.json(
+		if (db_err) throw db_err;
+		var row = {time: new Date().getTime(), data: req.query.msg};
+		if (req.query.key)
 		{
-			cpus: os.cpus(),
-			freemem: os.freemem(),
-			hostname: os.hostname(),
-			totalmem: os.totalmem(),
-			loadavg: os.loadavg(),
-			platform: os.platform(),
-			temppath: os.tmpdir(),
-			uptime: os.uptime()
+			db.exec(`
+				INSERT OR IGNORE INTO keys (key) VALUES (${esc(req.query.key)});
+				INSERT INTO log (time, keyid, data) VALUES (${row.time}, (SELECT id FROM keys WHERE key = ${esc(req.query.key)}), ${esc(row.data)});
+			`, e =>
+			{
+				if (e) throw e;
+				res.json(row);
+			});
+		}
+		else
+		{
+			db.exec(`INSERT INTO log (time,data) VALUES (${row.time},${esc(row.data)});`, e =>
+			{
+				if (e) throw e;
+				res.json(row);
+			});
+		}
+	});
+
+	app.get("/api/delete", (req, res) =>
+	{
+		if (db_err) throw db_err;
+		if (req.query.key)
+		{
+			db.exec(`DELETE FROM keys WHERE key = ${esc(req.query.key)}; VACUUM;`, e =>
+			{
+				if (e) throw e;
+				res.json({status:"success"});
+			});
+		}
+		else
+		{
+			res.json({status:"failure", message: "no key provided"});
+		}
+	});
+
+	app.get("/api/status", (req, res) =>
+	{
+		fs.stat(process.env.DB_PATH, (e, s) =>
+		{
+			res.json(
+			{
+				dbSize: e ? 0 : s.size,
+				cpus: os.cpus(),
+				freemem: os.freemem(),
+				hostname: os.hostname(),
+				totalmem: os.totalmem(),
+				loadavg: os.loadavg(),
+				platform: os.platform(),
+				temppath: os.tmpdir(),
+				uptime: os.uptime()
+			});
 		});
 	});
 

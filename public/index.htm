@@ -45,7 +45,7 @@
 							document.getElementById("txtInput").innerText = "";
 							this.text = "";
 							this.logData = [];
-							fetch("/log.json" + this.queryString)
+							fetch("/api/log" + this.queryString)
 							.then(o=>o.json())
 							.then(o =>
 							{
@@ -56,7 +56,7 @@
 						},
 						Write()
 						{
-							fetch("/log" + this.queryString)
+							fetch("/api/write" + this.queryString)
 							.then(o=>o.json())
 							.then(o =>
 							{
@@ -71,7 +71,7 @@
 						Delete()
 						{
 							if (!confirm("Delete all log data pertaining to key: " + this.key + "?")) return;
-							fetch("/delete" + this.queryString)
+							fetch("/api/delete" + this.queryString)
 							.then(o=>o.json())
 							.then(o =>
 							{

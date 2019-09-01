@@ -5,12 +5,13 @@
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.9.0/Sortable.min.js"></script>
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.0/vuedraggable.umd.min.js"></script>
+		<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.9.0/Sortable.min.js"></script>-->
+		<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.0/vuedraggable.umd.min.js"></script>-->
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/108/three.min.js"></script>
 		<script type="text/javascript" src="https://www.vantajs.com/dist/vanta.waves.min.js"></script>
 		<script type="text/javascript">
 
+			window.queryString = Object.fromEntries(document.location.search.replace(/^\?/, "").split("&").map(o=>o.split("=").map(o=>decodeURIComponent(o))));
 			$(()=>
 			{
 				// Configure App
@@ -24,28 +25,59 @@
 					data:
 					{
 						logData: [],
+						key: queryString.key,
 						text: ""
+					},
+					computed:
+					{
+						queryString()
+						{
+							var qs = [];
+							if (this.key) qs.push("key=" + encodeURIComponent(this.key));
+							if (this.text != "") qs.push("msg=" + encodeURIComponent(this.text));
+							return qs.length > 0 ? "?" + qs.join("&") : "";
+						}
 					},
 					methods:
 					{
 						Reload()
 						{
+							document.getElementById("txtInput").innerText = "";
+							this.text = "";
 							this.logData = [];
-							fetch("/log.json").then(o=>o.json()).then(o =>
+							fetch("/log.json" + this.queryString)
+							.then(o=>o.json())
+							.then(o =>
 							{
 								this.logData = o;
-							});
+							})
+							.catch(console.error);
 							return this;
 						},
 						Write()
 						{
-							fetch("/log?msg=" + encodeURIComponent(this.text)).then(o=>o.json()).then(o =>
+							fetch("/log" + this.queryString)
+							.then(o=>o.json())
+							.then(o =>
 							{
 								document.getElementById("txtInput").innerText = "";
 								this.text = "";
 								this.logData.unshift(o);
 								while (this.logData.length>1000) this.logData.pop();
-							});
+							})
+							.catch(console.error);
+							return this;
+						},
+						Delete()
+						{
+							if (!confirm("Delete all log data pertaining to key: " + this.key + "?")) return;
+							fetch("/delete" + this.queryString)
+							.then(o=>o.json())
+							.then(o =>
+							{
+								document.location.search = "";
+							})
+							.catch(console.error);
 							return this;
 						}
 					},
@@ -192,22 +224,19 @@
 				<button @click="Write">Write</button>
 			</div>
 			
-			<span style="position:fixed;top:0px;right:0px;font-size:12px;color:#fff;">
-				API GET: {{document.location.origin + "/log?msg={TEXT}"}}<br/>
-				API GET: {{document.location.origin + "/log.json"}}
-			</span>
+			<a href="https://github.com/Blitzsturm/logger" target="_blank" style="position:fixed;top:0px;right:0px;font-size:12px;color:#fff;">https://github.com/Blitzsturm/logger</a>
 
 			<div id="divLog">
-				<table>
+				<table v-if="logData.length>0">
 					<thead>
 						<tr>
 							<th>Time</th>
-							<th>Text</th>
+							<th>Data</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr v-for="row in logData">
-							<td>{{JSON.stringify(new Date(row.timestamp)).replace(/"|Z/g,"").replace(/T/g," ")}}</td>
+							<td>{{JSON.stringify(new Date(row.time)).replace(/"|Z/g,"").replace(/T/g," ")}}</td>
 							<td>
 								<pre>{{row.data}}</pre>
 							</td>

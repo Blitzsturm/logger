@@ -14,3 +14,7 @@ Experimental bare-bones Logging service
 * npm start
 
 Open a browser to http://localhost:5000
+
+## API Access
+* GET: /log?msg={TEXT}
+* GET: /log.json

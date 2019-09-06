@@ -95,6 +95,30 @@ async function Main()
 	});
 
 	app.listen(process.env.PORT, () => console.log(`Listening on port ${process.env.PORT} (http)`));
+	
+	process.on('SIGTERM', shutDown);
+	process.on('SIGINT', shutDown);
+	function shutDown()
+	{
+		console.log("Kill signal received!");
+		console.log("Shutting down http server...");
+		app.close(() =>
+		{
+			console.log("Shutting down database connection...");
+			db.close(() =>
+			{
+				console.error("Graceful shutdown complete!");
+				process.exit(0);
+			});
+		});
+		
+		setTimeout(() =>
+		{
+        	console.error("Shutdown taking too long, forcing...");
+        	process.exit(1);
+    	}, 10000);
+		
+	}
 }
 
 function cfgDB(strPath)

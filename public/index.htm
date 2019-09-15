@@ -59,7 +59,6 @@
 							.then(o=>o.json())
 							.then(o =>
 							{
-								document.getElementById("txtInput").innerText = "";
 								this.text = "";
 								this.logData.unshift(o);
 								while (this.logData.length>1000) this.logData.pop();

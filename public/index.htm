@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<title>Logger</title>
-		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js"></script>
+		<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.0.0/fetch.min.js"></script>-->
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
 		<!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.9.0/Sortable.min.js"></script>-->
@@ -25,7 +25,7 @@
 					data:
 					{
 						logData: [],
-						key: queryString.key,
+						key: queryString.key || "",
 						text: ""
 					},
 					computed:
@@ -42,7 +42,6 @@
 					{
 						Reload()
 						{
-							document.getElementById("txtInput").innerText = "";
 							this.text = "";
 							this.logData = [];
 							fetch("/api/log" + this.queryString)
@@ -85,20 +84,20 @@
 					{
 						editable:
 						{
-							template: '<div contenteditable="true" @input="update"></div>',
-							props: ['text', 'html'],
+							props: ['value', 'mode'],
 							mounted()
 							{
-								if (this.html) this.$el.innerHTML = this.html;
-								else if (this.text) this.$el.innerText = this.text;
+								if (this.mode == "html") this.$el.innerHTML = this.value;
+								else this.$el.innerText = this.value;
 							},
 							methods:
 							{
 								update(e)
 								{
-									this.$emit('update', e.target.innerText);
+									this.$emit('input', this.mode == "html" ? e.target.innerHTML : e.target.innerText);
 								}
-							}
+							},
+							template: `<div contenteditable="true" @input="update"></div>`
 						}
 					}
 				});
@@ -220,7 +219,7 @@
 		<div id="app" style="display:none;">
 
 			<div class="textSubmit">
-				<editable id="txtInput" :text="text" @update="text = $event"></editable>
+				<editable id="txtInput" v-model="text"></editable>
 				<button @click="Write">Write</button>
 			</div>
 			
